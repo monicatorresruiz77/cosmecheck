@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detector de microplásticos en cosméticos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+      background-color: #f7f7f7;
+      color: #222;
+    }
+
+    h1 {
+      color: #005f73;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #005f73;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin-top: 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0a9396;
+    }
+
+    .resultado {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: white;
+      border-left: 8px solid #ccc;
+    }
+
+    .alto {
+      border-left-color: #d00000;
+    }
+
+    .medio {
+      border-left-color: #ee9b00;
+    }
+
+    .bajo {
+      border-left-color: #2a9d8f;
+    }
+
+    .ingrediente {
+      margin-bottom: 12px;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border-radius: 6px;
+    }
+
+    .nota {
+      font-size: 14px;
+      color: #555;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Detector de microplásticos en cosméticos</h1>
+
+  <p>
+    Pega aquí la lista de ingredientes INCI de un cosmético. 
+    La herramienta buscará ingredientes asociados a microplásticos o polímeros sintéticos de preocupación.
+  </p>
+
+  <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Parfum..."></textarea>
+
+  <br>
+
+  <button onclick="analizarINCI()">Analizar ingredientes</button>
+
+  <div id="resultado"></div>
+
+  <p class="nota">
+    Nota: esta herramienta es orientativa. La presencia de un ingrediente en el INCI no siempre permite confirmar 
+    tamaño de partícula, forma física, solubilidad, biodegradabilidad o cumplimiento regulatorio. 
+    El resultado indica una sospecha basada en ingredientes declarados.
+  </p>
+
+  <script>
+    const ingredientes = [
+      {
+        nombre: "Polyethylene",
+        sinonimos: ["PE"],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Polímero plástico asociado a microbeads o partículas plásticas en cosméticos."
+      },
+      {
+        nombre: "Polypropylene",
+        sinonimos: ["PP"],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Polímero plástico sintético. Puede aparecer como partícula sólida en algunos productos."
+      },
+      {
+        nombre: "Polymethyl Methacrylate",
+        sinonimos: ["PMMA"],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Polímero acrílico sintético utilizado en algunos cosméticos."
+      },
+      {
+        nombre: "Polyethylene Terephthalate",
+        sinonimos: ["PET"],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Polímero plástico sintético asociado a partículas plásticas."
+      },
+      {
+        nombre: "Nylon-12",
+        sinonimos: [],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Poliamida sintética usada en cosméticos, especialmente por textura o efecto sensorial."
+      },
+      {
+        nombre: "Nylon-6",
+        sinonimos: [],
+        riesgo: "alto",
+        categoria: "Microplástico clásico",
+        comentario: "Poliamida sintética que puede aparecer como partícula plástica."
+      },
+      {
+        nombre: "Polyurethane",
+        sinonimos: [],
+        riesgo: "alto",
+        categoria: "Polímero sintético",
+        comentario: "Polímero sintético que puede estar asociado a partículas plásticas o film-formers."
+      },
+      {
+        nombre: "Acrylates Copolymer",
+        sinonimos: [],
+        riesgo: "medio",
+        categoria: "Polímero sintético contextual",
+        comentario: "Ingrediente polimérico. Su clasificación como microplástico depende de sus propiedades físico-químicas."
+      },
+      {
+        nombre: "Acrylates Crosspolymer",
+        sinonimos: [],
+        riesgo: "medio",
+        categoria: "Polímero sintético contextual",
+        comentario: "Puede actuar como espesante o formador de película. Requiere interpretación contextual."
+      },
+      {
+        nombre: "Styrene/Acrylates Copolymer",
+        sinonimos: [],
+        riesgo: "medio",
+        categoria: "Polímero sintético contextual",
+        comentario: "Copolímero sintético usado en cosméticos. Puede ser relevante según forma y uso."
+      },
+      {
+        nombre: "Carbomer",
+        sinonimos: [],
+        riesgo: "medio",
+        categoria: "Polímero sintético contextual",
+        comentario: "Polímero usado como gelificante o espesante. No siempre corresponde a microplástico sólido."
+      },
+      {
+        nombre: "Dimethicone",
+        sinonimos: [],
+        riesgo: "medio",
+        categoria: "Silicona/polímero contextual",
+        comentario: "Silicona polimérica. No es una microbead clásica, pero puede marcarse como polímero sintético."
+      }
+    ];
+
+    function normalizarTexto(texto) {
+      return texto.toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function contieneIngrediente(texto, termino) {
+      const textoNormalizado = normalizarTexto(texto);
+      const terminoNormalizado = normalizarTexto(termino);
+
+      const patron = new RegExp("\\b" + terminoNormalizado.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+      return patron.test(textoNormalizado);
+    }
+
+    function analizarINCI() {
+      const inci = document.getElementById("inciInput").value;
+      const resultadoDiv = document.getElementById("resultado");
+
+      if (inci.trim() === "") {
+        resultadoDiv.innerHTML = `
+          <div class="resultado">
+            <strong>Por favor, pega una lista de ingredientes INCI antes de analizar.</strong>
+          </div>
+        `;
+        return;
+      }
+
+      const encontrados = [];
+
+      ingredientes.forEach(ingrediente => {
+        let detectado = contieneIngrediente(inci, ingrediente.nombre);
+
+        if (!detectado && ingrediente.sinonimos.length > 0) {
+          detectado = ingrediente.sinonimos.some(sinonimo => contieneIngrediente(inci, sinonimo));
+        }
+
+        if (detectado) {
+          encontrados.push(ingrediente);
+        }
+      });
+
+      if (encontrados.length === 0) {
+        resultadoDiv.innerHTML = `
+          <div class="resultado bajo">
+            <h2>Resultado: no se han detectado ingredientes de la lista inicial</h2>
+            <p>No se han encontrado microplásticos clásicos ni polímeros sintéticos incluidos en esta versión inicial de la herramienta.</p>
+            <p>Esto no garantiza que el producto esté completamente libre de microplásticos, pero no se han detectado coincidencias con la base de datos actual.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const hayAlto = encontrados.some(i => i.riesgo === "alto");
+      const claseResultado = hayAlto ? "alto" : "medio";
+      const textoRiesgo = hayAlto ? "riesgo alto" : "riesgo medio/contextual";
+
+      let html = `
+        <div class="resultado ${claseResultado}">
+          <h2>Resultado: ${textoRiesgo}</h2>
+          <p>Se han detectado los siguientes ingredientes:</p>
+      `;
+
+      encontrados.forEach(ingrediente => {
+        html += `
+          <div class="ingrediente">
+            <strong>${ingrediente.nombre}</strong><br>
+            Categoría: ${ingrediente.categoria}<br>
+            Nivel: ${ingrediente.riesgo}<br>
+            ${ingrediente.comentario}
+          </div>
+        `;
+      });
+
+      html += `
+          <p><strong>Interpretación:</strong> revisa estos ingredientes si buscas evitar microplásticos o polímeros sintéticos persistentes en cosméticos.</p>
+        </div>
+      `;
+
+      resultadoDiv.innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>
