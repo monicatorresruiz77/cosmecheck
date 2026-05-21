@@ -264,23 +264,187 @@
     cursor: pointer;
     color: var(--azul);
     font-weight: bold;
+  }.hero {
+  padding: 34px;
+  border-radius: 26px;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.16);
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+.hero-contenido {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero h1 {
+  color: white;
+  font-size: 3rem;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.22);
+}
+
+.hero .subtitulo {
+  color: white;
+  font-size: 19px;
+  max-width: 760px;
+}
+
+.hero-badges {
+  margin-top: 18px;
+}
+
+.badge-hero {
+  display: inline-block;
+  background: rgba(255,255,255,0.22);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.28);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  margin: 4px 5px 4px 0;
+}
+
+.hero-ilustracion {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 24px;
+  padding: 22px;
+  text-align: center;
+  color: white;
+  box-shadow: inset 0 0 30px rgba(255,255,255,0.08);
+}
+
+.hero-icono-grande {
+  font-size: 74px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.hero-ilustracion p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.tarjetas-inicio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.tarjeta-inicio {
+  background: rgba(255,255,255,0.92);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+  border: 1px solid rgba(255,255,255,0.45);
+}
+
+.tarjeta-inicio .icono {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.tarjeta-inicio strong {
+  color: var(--azul);
+  font-size: 17px;
+}
+
+.tarjeta-inicio p {
+  margin-bottom: 0;
+  font-size: 14px;
+  color: #4f5d75;
+}
+
+.icono-titulo {
+  margin-right: 6px;
+}
+
+@media (max-width: 760px) {
+  .hero-contenido {
+    grid-template-columns: 1fr;
   }
+
+  .hero h1 {
+    font-size: 2.4rem;
+  }
+
+  .hero-ilustracion {
+    display: none;
+  }
+}
 </style>
 </head>
 
 <body>
 
-  <h1>CosmeCheck</h1>
-  <p class="subtitulo">
-    Detector orientativo de microplásticos, polímeros sintéticos y alertas endocrinas/tiroideas en cosméticos a partir del INCI.
-  </p>
+  <div class="hero">
+  <div class="hero-contenido">
+    <div>
+      <h1>CosmeCheck</h1>
 
-  <div class="info">
-    <strong>Versión científica:</strong> el resultado se organiza por tipo de alerta, nivel de evidencia y mecanismo probable. No evalúa concentración, exposición real ni cumplimiento legal.
+      <p class="subtitulo">
+        Revisa ingredientes cosméticos a partir del INCI y detecta posibles
+        microplásticos, polímeros sintéticos y alertas endocrinas/tiroideas.
+      </p>
+
+      <div class="hero-badges">
+        <span class="badge-hero">🔬 Cribado científico</span>
+        <span class="badge-hero">📸 Lectura por foto</span>
+        <span class="badge-hero">🧴 Cosméticos</span>
+        <span class="badge-hero">🦋 Tiroides</span>
+      </div>
+    </div>
+
+    <div class="hero-ilustracion">
+      <div class="hero-icono-grande">🧴🔎</div>
+      <p>
+        Sube una foto del INCI, revisa el texto leído y obtén una alerta orientativa.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="tarjetas-inicio">
+  <div class="tarjeta-inicio">
+    <div class="icono">📸</div>
+    <strong>1. Lee el INCI</strong>
+    <p>
+      Sube una foto de la etiqueta o pega manualmente la lista de ingredientes.
+    </p>
   </div>
 
+  <div class="tarjeta-inicio">
+    <div class="icono">🧩</div>
+    <strong>2. Detecta microplásticos</strong>
+    <p>
+      Identifica ingredientes como polyethylene, nylon, PMMA, acrylates o carbomer.
+    </p>
+  </div>
+
+  <div class="tarjeta-inicio">
+    <div class="icono">🦋</div>
+    <strong>3. Revisa alertas endocrinas</strong>
+    <p>
+      Marca filtros UV, bisfenoles, triclosan, resorcinol y otros ingredientes de interés.
+    </p>
+  </div>
+</div>
+
+<div class="info">
+  <strong>Versión científica:</strong> el resultado se organiza por tipo de alerta,
+  nivel de evidencia y mecanismo probable. No evalúa concentración, exposición real
+  ni cumplimiento legal.
+</div>
+
   <div class="bloque">
-    <h2>1. Sube una foto del INCI</h2>
+   <h2><span class="icono-titulo">📸</span>1. Sube una foto del INCI</h2>
     <p>Haz una foto clara de la lista de ingredientes. La herramienta intentará leer el texto automáticamente.</p>
     <input type="file" id="imagenInput" accept="image/*">
     <br>
@@ -293,7 +457,7 @@
   </div>
 
   <div class="bloque">
-    <h2>2. Revisa o pega aquí la lista INCI</h2>
+   <h2><span class="icono-titulo">📝</span>2. Revisa o pega aquí la lista INCI</h2>
     <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Benzophenone-3, Triclosan, Resorcinol, Parfum..."></textarea>
 
     <label for="tipoProducto"><strong>Tipo de producto, si lo sabes:</strong></label><br>
@@ -313,7 +477,7 @@
   <div id="resultado"></div>
 
   <div class="bloque">
-    <h2>Cómo interpretar esta herramienta</h2>
+    <h2><span class="icono-titulo">🔎</span>Cómo interpretar esta herramienta</h2>
     <p>
       Esta web identifica ingredientes declarados en el INCI que pertenecen a listas de alerta. No demuestra toxicidad del producto final ni incumplimiento legal.
     </p>
