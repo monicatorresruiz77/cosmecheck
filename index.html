@@ -2,11 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Detector de microplásticos en cosméticos</title>
+  <title>MicroPlastCheck - Detector de microplásticos en cosméticos</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 850px;
+      max-width: 900px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.6;
@@ -16,16 +19,36 @@
 
     h1 {
       color: #005f73;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      color: #005f73;
+    }
+
+    .subtitulo {
+      font-size: 18px;
+      color: #444;
+      margin-top: 0;
+    }
+
+    .bloque {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     textarea {
       width: 100%;
-      height: 180px;
+      height: 190px;
       padding: 12px;
       font-size: 16px;
       margin-top: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     button {
@@ -34,6 +57,7 @@
       border: none;
       padding: 12px 20px;
       margin-top: 15px;
+      margin-right: 8px;
       font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -41,6 +65,16 @@
 
     button:hover {
       background-color: #0a9396;
+    }
+
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+      font-size: 15px;
     }
 
     .resultado {
@@ -75,29 +109,85 @@
       color: #555;
       margin-top: 30px;
     }
+
+    .aviso {
+      background-color: #fff3cd;
+      border-left: 6px solid #ee9b00;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .estado {
+      font-weight: bold;
+      color: #005f73;
+      margin-top: 15px;
+    }
+
+    #previewImagen {
+      max-width: 100%;
+      margin-top: 15px;
+      border-radius: 10px;
+      display: none;
+      border: 1px solid #ccc;
+    }
+
+    .pequeno {
+      font-size: 14px;
+      color: #666;
+    }
   </style>
 </head>
 
 <body>
 
-  <h1>Detector de microplásticos en cosméticos</h1>
+  <h1>MicroPlastCheck</h1>
+  <p class="subtitulo">Detector orientativo de microplásticos y polímeros sintéticos en cosméticos</p>
 
-  <p>
-    Pega aquí la lista de ingredientes INCI de un cosmético. 
-    La herramienta buscará ingredientes asociados a microplásticos o polímeros sintéticos de preocupación.
-  </p>
+  <div class="bloque">
+    <h2>1. Sube una foto del INCI</h2>
 
-  <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Parfum..."></textarea>
+    <p>
+      Haz una foto clara de la lista de ingredientes del cosmético. 
+      La herramienta intentará leer el texto automáticamente.
+    </p>
 
-  <br>
+    <input type="file" id="imagenInput" accept="image/*">
 
-  <button onclick="analizarINCI()">Analizar ingredientes</button>
+    <br>
+
+    <button id="botonOCR" onclick="leerImagen()">Leer texto de la foto</button>
+
+    <p id="estadoOCR" class="estado"></p>
+
+    <img id="previewImagen" alt="Vista previa de la imagen subida">
+
+    <div class="aviso">
+      <strong>Consejo:</strong> la foto debe estar enfocada, sin reflejos y lo más cerca posible de la lista de ingredientes.
+      Después del OCR, revisa el texto porque puede haber errores.
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h2>2. Revisa o pega aquí la lista INCI</h2>
+
+    <p>
+      El texto leído de la foto aparecerá aquí. También puedes pegar los ingredientes manualmente.
+    </p>
+
+    <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Parfum, Carbomer..."></textarea>
+
+    <br>
+
+    <button onclick="analizarINCI()">Analizar ingredientes</button>
+    <button onclick="limpiarTodo()">Limpiar</button>
+  </div>
 
   <div id="resultado"></div>
 
   <p class="nota">
-    Nota: esta herramienta es orientativa. La presencia de un ingrediente en el INCI no siempre permite confirmar 
-    tamaño de partícula, forma física, solubilidad, biodegradabilidad o cumplimiento regulatorio. 
+    Nota: esta herramienta es orientativa. La presencia de un ingrediente en el INCI no siempre permite confirmar
+    tamaño de partícula, forma física, solubilidad, biodegradabilidad o cumplimiento regulatorio.
     El resultado indica una sospecha basada en ingredientes declarados.
   </p>
 
@@ -133,14 +223,14 @@
       },
       {
         nombre: "Nylon-12",
-        sinonimos: [],
+        sinonimos: ["Nylon 12"],
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Poliamida sintética usada en cosméticos, especialmente por textura o efecto sensorial."
       },
       {
         nombre: "Nylon-6",
-        sinonimos: [],
+        sinonimos: ["Nylon 6"],
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Poliamida sintética que puede aparecer como partícula plástica."
@@ -168,7 +258,7 @@
       },
       {
         nombre: "Styrene/Acrylates Copolymer",
-        sinonimos: [],
+        sinonimos: ["Styrene Acrylates Copolymer"],
         riesgo: "medio",
         categoria: "Polímero sintético contextual",
         comentario: "Copolímero sintético usado en cosméticos. Puede ser relevante según forma y uso."
@@ -189,15 +279,95 @@
       }
     ];
 
+    const imagenInput = document.getElementById("imagenInput");
+    const previewImagen = document.getElementById("previewImagen");
+
+    imagenInput.addEventListener("change", function () {
+      const archivo = imagenInput.files[0];
+
+      if (!archivo) {
+        previewImagen.style.display = "none";
+        previewImagen.src = "";
+        return;
+      }
+
+      const lector = new FileReader();
+
+      lector.onload = function (e) {
+        previewImagen.src = e.target.result;
+        previewImagen.style.display = "block";
+      };
+
+      lector.readAsDataURL(archivo);
+    });
+
+    async function leerImagen() {
+      const archivo = imagenInput.files[0];
+      const estadoOCR = document.getElementById("estadoOCR");
+      const botonOCR = document.getElementById("botonOCR");
+      const inciInput = document.getElementById("inciInput");
+
+      if (!archivo) {
+        estadoOCR.textContent = "Primero sube una foto de la lista de ingredientes.";
+        return;
+      }
+
+      estadoOCR.textContent = "Leyendo la imagen... Puede tardar unos segundos.";
+      botonOCR.disabled = true;
+
+      try {
+        const resultado = await Tesseract.recognize(
+          archivo,
+          "eng+spa",
+          {
+            logger: function(m) {
+              if (m.status === "recognizing text") {
+                const progreso = Math.round(m.progress * 100);
+                estadoOCR.textContent = "Leyendo texto: " + progreso + "%";
+              }
+            }
+          }
+        );
+
+        const textoLeido = resultado.data.text;
+
+        inciInput.value = limpiarTextoOCR(textoLeido);
+
+        estadoOCR.textContent = "Texto leído. Revísalo y corrige posibles errores antes de analizar.";
+      } catch (error) {
+        estadoOCR.textContent = "No se ha podido leer la imagen. Prueba con una foto más clara o pega el INCI manualmente.";
+        console.error(error);
+      }
+
+      botonOCR.disabled = false;
+    }
+
+    function limpiarTextoOCR(texto) {
+      return texto
+        .replace(/\n/g, " ")
+        .replace(/\s+/g, " ")
+        .replace(/INGREDIENTS?:/gi, "")
+        .replace(/INGREDIENTES?:/gi, "")
+        .trim();
+    }
+
     function normalizarTexto(texto) {
-      return texto.toLowerCase().replace(/\s+/g, " ").trim();
+      return texto
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function escaparRegex(texto) {
+      return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
 
     function contieneIngrediente(texto, termino) {
       const textoNormalizado = normalizarTexto(texto);
       const terminoNormalizado = normalizarTexto(termino);
 
-      const patron = new RegExp("\\b" + terminoNormalizado.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+      const patron = new RegExp("(^|[^a-z0-9])" + escaparRegex(terminoNormalizado) + "([^a-z0-9]|$)", "i");
+
       return patron.test(textoNormalizado);
     }
 
@@ -208,7 +378,7 @@
       if (inci.trim() === "") {
         resultadoDiv.innerHTML = `
           <div class="resultado">
-            <strong>Por favor, pega una lista de ingredientes INCI antes de analizar.</strong>
+            <strong>Por favor, sube una foto o pega una lista de ingredientes INCI antes de analizar.</strong>
           </div>
         `;
         return;
@@ -266,6 +436,15 @@
       `;
 
       resultadoDiv.innerHTML = html;
+    }
+
+    function limpiarTodo() {
+      document.getElementById("inciInput").value = "";
+      document.getElementById("resultado").innerHTML = "";
+      document.getElementById("estadoOCR").textContent = "";
+      document.getElementById("imagenInput").value = "";
+      previewImagen.style.display = "none";
+      previewImagen.src = "";
     }
   </script>
 
