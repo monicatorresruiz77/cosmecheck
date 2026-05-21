@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>MicroPlastCheck - Detector de microplásticos en cosméticos</title>
+  <title>MicroPlastCheck - Detector de microplásticos y alertas endocrinas</title>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 900px;
+      max-width: 950px;
       margin: 40px auto;
       padding: 20px;
       line-height: 1.6;
@@ -22,7 +22,7 @@
       margin-bottom: 5px;
     }
 
-    h2 {
+    h2, h3 {
       color: #005f73;
     }
 
@@ -99,9 +99,30 @@
 
     .ingrediente {
       margin-bottom: 12px;
-      padding: 10px;
+      padding: 12px;
       background-color: #f1f1f1;
       border-radius: 6px;
+    }
+
+    .etiqueta {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .etiqueta-alto {
+      background-color: #d00000;
+    }
+
+    .etiqueta-medio {
+      background-color: #ee9b00;
+    }
+
+    .etiqueta-bajo {
+      background-color: #2a9d8f;
     }
 
     .nota {
@@ -136,19 +157,38 @@
       font-size: 14px;
       color: #666;
     }
+
+    .resumen {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .tarjeta-resumen {
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .tarjeta-resumen strong {
+      color: #005f73;
+    }
   </style>
 </head>
 
 <body>
 
   <h1>MicroPlastCheck</h1>
-  <p class="subtitulo">Detector orientativo de microplásticos y polímeros sintéticos en cosméticos</p>
+  <p class="subtitulo">
+    Detector orientativo de microplásticos, polímeros sintéticos y alertas endocrinas/tiroideas en cosméticos
+  </p>
 
   <div class="bloque">
     <h2>1. Sube una foto del INCI</h2>
 
     <p>
-      Haz una foto clara de la lista de ingredientes del cosmético. 
+      Haz una foto clara de la lista de ingredientes del cosmético.
       La herramienta intentará leer el texto automáticamente.
     </p>
 
@@ -175,7 +215,7 @@
       El texto leído de la foto aparecerá aquí. También puedes pegar los ingredientes manualmente.
     </p>
 
-    <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Parfum, Carbomer..."></textarea>
+    <textarea id="inciInput" placeholder="Ejemplo: Aqua, Glycerin, Polyethylene, Benzophenone-3, Triclosan, Parfum..."></textarea>
 
     <br>
 
@@ -186,16 +226,19 @@
   <div id="resultado"></div>
 
   <p class="nota">
-    Nota: esta herramienta es orientativa. La presencia de un ingrediente en el INCI no siempre permite confirmar
-    tamaño de partícula, forma física, solubilidad, biodegradabilidad o cumplimiento regulatorio.
-    El resultado indica una sospecha basada en ingredientes declarados.
+    Nota: esta herramienta es orientativa y no sustituye una evaluación toxicológica o regulatoria.
+    La presencia de un ingrediente en el INCI no siempre permite confirmar concentración, tamaño de partícula,
+    forma física, solubilidad, biodegradabilidad, absorción o exposición real.
+    El resultado indica una alerta basada en ingredientes declarados.
   </p>
 
   <script>
     const ingredientes = [
+      /* MICROPLÁSTICOS Y POLÍMEROS SINTÉTICOS */
       {
         nombre: "Polyethylene",
         sinonimos: ["PE"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Polímero plástico asociado a microbeads o partículas plásticas en cosméticos."
@@ -203,6 +246,7 @@
       {
         nombre: "Polypropylene",
         sinonimos: ["PP"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Polímero plástico sintético. Puede aparecer como partícula sólida en algunos productos."
@@ -210,6 +254,7 @@
       {
         nombre: "Polymethyl Methacrylate",
         sinonimos: ["PMMA"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Polímero acrílico sintético utilizado en algunos cosméticos."
@@ -217,6 +262,7 @@
       {
         nombre: "Polyethylene Terephthalate",
         sinonimos: ["PET"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Polímero plástico sintético asociado a partículas plásticas."
@@ -224,6 +270,7 @@
       {
         nombre: "Nylon-12",
         sinonimos: ["Nylon 12"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Poliamida sintética usada en cosméticos, especialmente por textura o efecto sensorial."
@@ -231,6 +278,7 @@
       {
         nombre: "Nylon-6",
         sinonimos: ["Nylon 6"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Microplástico clásico",
         comentario: "Poliamida sintética que puede aparecer como partícula plástica."
@@ -238,20 +286,31 @@
       {
         nombre: "Polyurethane",
         sinonimos: [],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "alto",
         categoria: "Polímero sintético",
         comentario: "Polímero sintético que puede estar asociado a partículas plásticas o film-formers."
       },
       {
+        nombre: "Polyacrylate",
+        sinonimos: ["Sodium Polyacrylate"],
+        grupo: "Microplásticos / polímeros sintéticos",
+        riesgo: "medio",
+        categoria: "Polímero sintético contextual",
+        comentario: "Ingrediente polimérico. Su clasificación como microplástico depende de sus propiedades físico-químicas."
+      },
+      {
         nombre: "Acrylates Copolymer",
         sinonimos: [],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "medio",
         categoria: "Polímero sintético contextual",
         comentario: "Ingrediente polimérico. Su clasificación como microplástico depende de sus propiedades físico-químicas."
       },
       {
         nombre: "Acrylates Crosspolymer",
-        sinonimos: [],
+        sinonimos: ["Acrylates/C10-30 Alkyl Acrylate Crosspolymer"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "medio",
         categoria: "Polímero sintético contextual",
         comentario: "Puede actuar como espesante o formador de película. Requiere interpretación contextual."
@@ -259,6 +318,7 @@
       {
         nombre: "Styrene/Acrylates Copolymer",
         sinonimos: ["Styrene Acrylates Copolymer"],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "medio",
         categoria: "Polímero sintético contextual",
         comentario: "Copolímero sintético usado en cosméticos. Puede ser relevante según forma y uso."
@@ -266,6 +326,7 @@
       {
         nombre: "Carbomer",
         sinonimos: [],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "medio",
         categoria: "Polímero sintético contextual",
         comentario: "Polímero usado como gelificante o espesante. No siempre corresponde a microplástico sólido."
@@ -273,9 +334,220 @@
       {
         nombre: "Dimethicone",
         sinonimos: [],
+        grupo: "Microplásticos / polímeros sintéticos",
         riesgo: "medio",
         categoria: "Silicona/polímero contextual",
-        comentario: "Silicona polimérica. No es una microbead clásica, pero puede marcarse como polímero sintético."
+        comentario: "Silicona polimérica. No es una microbead clásica, pero puede marcarse como polímero sintético contextual."
+      },
+
+      /* ALERTAS ENDOCRINAS / TIROIDEAS */
+      {
+        nombre: "Benzophenone",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Benzofenona / filtro UV / alerta endocrina",
+        comentario: "Ingrediente priorizado en la UE dentro de sustancias cosméticas con posible actividad endocrina. Tiene estructura aromática compatible con alerta tiroidea estructural."
+      },
+      {
+        nombre: "Benzophenone-1",
+        sinonimos: ["BP-1"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Benzofenona / alerta estructural tiroidea",
+        comentario: "Derivado de benzofenona. Alerta por estructura aromática/fenólica relacionada con compuestos tiroactivos."
+      },
+      {
+        nombre: "Benzophenone-2",
+        sinonimos: ["BP-2"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Benzofenona / alerta estructural tiroidea",
+        comentario: "Derivado de benzofenona. Se marca como alerta estructural por similitud con compuestos fenólicos tiroactivos."
+      },
+      {
+        nombre: "Benzophenone-3",
+        sinonimos: ["Oxybenzone", "BP-3"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Filtro UV con evaluación endocrina",
+        comentario: "Filtro UV priorizado en la UE por posibles propiedades endocrinas. También conocido como oxybenzone."
+      },
+      {
+        nombre: "Benzophenone-4",
+        sinonimos: ["BP-4"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Benzofenona / alerta estructural tiroidea",
+        comentario: "Derivado de benzofenona. Alerta contextual por estructura y posible relevancia endocrina."
+      },
+      {
+        nombre: "Benzophenone-5",
+        sinonimos: ["BP-5"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Benzofenona / alerta estructural tiroidea",
+        comentario: "Derivado de benzofenona. Alerta contextual por estructura y posible relevancia endocrina."
+      },
+      {
+        nombre: "Triclosan",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Antimicrobiano fenólico / alerta endocrina",
+        comentario: "Sustancia evaluada por posibles propiedades de disrupción endocrina. Estructura halogenada/fenólica compatible con alerta tiroidea."
+      },
+      {
+        nombre: "Triclocarban",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Antimicrobiano / alerta endocrina",
+        comentario: "Sustancia evaluada por posibles propiedades de disrupción endocrina en cosméticos."
+      },
+      {
+        nombre: "Resorcinol",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Fenol / alerta tiroidea",
+        comentario: "Ingrediente priorizado en la UE por posible actividad endocrina. Puede tener relevancia para la función tiroidea."
+      },
+      {
+        nombre: "Homosalate",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Filtro UV / alerta endocrina",
+        comentario: "Filtro UV priorizado en la UE por posibles propiedades endocrinas."
+      },
+      {
+        nombre: "Octocrylene",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Filtro UV / alerta endocrina",
+        comentario: "Filtro UV priorizado en la UE por posibles propiedades endocrinas."
+      },
+      {
+        nombre: "Ethylhexyl Methoxycinnamate",
+        sinonimos: ["Octinoxate", "Octyl Methoxycinnamate", "OMC", "EHMC"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Filtro UV / alerta endocrina contextual",
+        comentario: "Filtro UV incluido en listas de sustancias con posible interés endocrino. Requiere interpretación según producto y exposición."
+      },
+      {
+        nombre: "4-Methylbenzylidene Camphor",
+        sinonimos: ["4-MBC"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Filtro UV / alerta endocrina",
+        comentario: "Filtro UV priorizado por posible actividad endocrina."
+      },
+      {
+        nombre: "Butylated Hydroxytoluene",
+        sinonimos: ["BHT"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Antioxidante fenólico / alerta endocrina contextual",
+        comentario: "Antioxidante fenólico priorizado en la UE por posible actividad endocrina. Alerta contextual."
+      },
+      {
+        nombre: "Butylated Hydroxyanisole",
+        sinonimos: ["BHA", "Tert-Butylhydroxyanisole"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Antioxidante fenólico / alerta endocrina contextual",
+        comentario: "Antioxidante fenólico con alerta endocrina contextual."
+      },
+      {
+        nombre: "Propylparaben",
+        sinonimos: ["Propyl Paraben"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Parabeno / alerta endocrina",
+        comentario: "Parabeno priorizado en la UE por posibles propiedades endocrinas."
+      },
+      {
+        nombre: "Butylparaben",
+        sinonimos: ["Butyl Paraben"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Parabeno / alerta endocrina contextual",
+        comentario: "Parabeno con alerta endocrina contextual."
+      },
+      {
+        nombre: "Methylparaben",
+        sinonimos: ["Methyl Paraben"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Parabeno / alerta endocrina contextual",
+        comentario: "Parabeno con alerta endocrina contextual. La relevancia depende de concentración, mezcla y exposición."
+      },
+      {
+        nombre: "Kojic Acid",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Ingrediente despigmentante / alerta endocrina contextual",
+        comentario: "Sustancia priorizada en la UE por posible actividad endocrina."
+      },
+      {
+        nombre: "Benzyl Salicylate",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Fragancia / alerta endocrina contextual",
+        comentario: "Sustancia priorizada en la UE por posible actividad endocrina. Alerta contextual."
+      },
+      {
+        nombre: "Genistein",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Isoflavona / actividad endocrina contextual",
+        comentario: "Compuesto con actividad hormonal conocida. La relevancia depende de concentración y exposición."
+      },
+      {
+        nombre: "Daidzein",
+        sinonimos: [],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "medio",
+        categoria: "Isoflavona / actividad endocrina contextual",
+        comentario: "Compuesto con actividad hormonal conocida. La relevancia depende de concentración y exposición."
+      },
+      {
+        nombre: "Bisphenol A",
+        sinonimos: ["BPA"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Bisfenol / alerta endocrina-tiroidea",
+        comentario: "Bisfenol con estructura de dos anillos fenólicos. Alerta por actividad endocrina y similitud estructural con compuestos tiroactivos."
+      },
+      {
+        nombre: "Bisphenol S",
+        sinonimos: ["BPS"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Bisfenol / alerta endocrina-tiroidea",
+        comentario: "Análogo de BPA con estructura bisfenólica. Alerta por posible actividad endocrina."
+      },
+      {
+        nombre: "Bisphenol F",
+        sinonimos: ["BPF"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Bisfenol / alerta endocrina-tiroidea",
+        comentario: "Análogo de BPA con estructura bisfenólica. Alerta por posible actividad endocrina."
+      },
+      {
+        nombre: "Bisphenol AF",
+        sinonimos: ["BPAF"],
+        grupo: "Alertas endocrinas / tiroideas",
+        riesgo: "alto",
+        categoria: "Bisfenol / alerta endocrina-tiroidea",
+        comentario: "Análogo fluorado de BPA. Alerta por posible actividad endocrina y estructura bisfenólica."
       }
     ];
 
@@ -355,6 +627,7 @@
       return texto
         .toLowerCase()
         .replace(/\s+/g, " ")
+        .replace(/[–—]/g, "-")
         .trim();
     }
 
@@ -401,41 +674,83 @@
       if (encontrados.length === 0) {
         resultadoDiv.innerHTML = `
           <div class="resultado bajo">
-            <h2>Resultado: no se han detectado ingredientes de la lista inicial</h2>
-            <p>No se han encontrado microplásticos clásicos ni polímeros sintéticos incluidos en esta versión inicial de la herramienta.</p>
-            <p>Esto no garantiza que el producto esté completamente libre de microplásticos, pero no se han detectado coincidencias con la base de datos actual.</p>
+            <h2>Resultado: no se han detectado ingredientes de la lista actual</h2>
+            <p>No se han encontrado microplásticos clásicos, polímeros sintéticos ni alertas endocrinas/tiroideas incluidas en esta versión de la herramienta.</p>
+            <p>Esto no garantiza que el producto esté completamente libre de riesgo, pero no se han detectado coincidencias con la base de datos actual.</p>
           </div>
         `;
         return;
       }
 
+      const microplasticos = encontrados.filter(i => i.grupo === "Microplásticos / polímeros sintéticos");
+      const endocrinos = encontrados.filter(i => i.grupo === "Alertas endocrinas / tiroideas");
+
       const hayAlto = encontrados.some(i => i.riesgo === "alto");
       const claseResultado = hayAlto ? "alto" : "medio";
-      const textoRiesgo = hayAlto ? "riesgo alto" : "riesgo medio/contextual";
+      const textoRiesgo = hayAlto ? "alerta alta" : "alerta media/contextual";
 
       let html = `
         <div class="resultado ${claseResultado}">
           <h2>Resultado: ${textoRiesgo}</h2>
-          <p>Se han detectado los siguientes ingredientes:</p>
+
+          <div class="resumen">
+            <div class="tarjeta-resumen">
+              <strong>Microplásticos / polímeros:</strong><br>
+              ${microplasticos.length} ingrediente(s) detectado(s)
+            </div>
+            <div class="tarjeta-resumen">
+              <strong>Alertas endocrinas/tiroideas:</strong><br>
+              ${endocrinos.length} ingrediente(s) detectado(s)
+            </div>
+          </div>
       `;
 
-      encontrados.forEach(ingrediente => {
+      if (microplasticos.length > 0) {
         html += `
-          <div class="ingrediente">
-            <strong>${ingrediente.nombre}</strong><br>
-            Categoría: ${ingrediente.categoria}<br>
-            Nivel: ${ingrediente.riesgo}<br>
-            ${ingrediente.comentario}
-          </div>
+          <h3>Microplásticos y polímeros sintéticos detectados</h3>
         `;
-      });
+
+        microplasticos.forEach(ingrediente => {
+          html += crearBloqueIngrediente(ingrediente);
+        });
+      }
+
+      if (endocrinos.length > 0) {
+        html += `
+          <h3>Alertas endocrinas / tiroideas detectadas</h3>
+        `;
+
+        endocrinos.forEach(ingrediente => {
+          html += crearBloqueIngrediente(ingrediente);
+        });
+      }
 
       html += `
-          <p><strong>Interpretación:</strong> revisa estos ingredientes si buscas evitar microplásticos o polímeros sintéticos persistentes en cosméticos.</p>
+          <div class="aviso">
+            <strong>Interpretación:</strong> este resultado no implica automáticamente toxicidad ni incumplimiento legal.
+            Indica ingredientes que conviene revisar si se busca evitar microplásticos, polímeros sintéticos persistentes
+            o sustancias con alerta endocrina/tiroidea.
+          </div>
         </div>
       `;
 
       resultadoDiv.innerHTML = html;
+    }
+
+    function crearBloqueIngrediente(ingrediente) {
+      const claseEtiqueta = ingrediente.riesgo === "alto" ? "etiqueta-alto" :
+                            ingrediente.riesgo === "medio" ? "etiqueta-medio" :
+                            "etiqueta-bajo";
+
+      return `
+        <div class="ingrediente">
+          <span class="etiqueta ${claseEtiqueta}">${ingrediente.riesgo}</span><br>
+          <strong>${ingrediente.nombre}</strong><br>
+          Grupo: ${ingrediente.grupo}<br>
+          Categoría: ${ingrediente.categoria}<br>
+          ${ingrediente.comentario}
+        </div>
+      `;
     }
 
     function limpiarTodo() {
